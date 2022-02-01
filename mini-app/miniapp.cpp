@@ -3,6 +3,7 @@
 #include <QDoubleValidator>
 #include <qmessagebox.h>
 #include <qsettings.h>
+#include <qclipboard.h>
 
 namespace
 {
@@ -56,6 +57,21 @@ miniapp::miniapp(QWidget* parent)
 	QObject::connect(Ds_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
 	QObject::connect(A_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
 	QObject::connect(freq_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
+
+	QPushButton* copy_qmin_button = this->findChild<QPushButton*>("copyQmin");
+	QPushButton* copy_qsek_button = this->findChild<QPushButton*>("copyQsek");
+
+	QClipboard* clipboard = QApplication::clipboard();
+
+	QObject::connect(copy_qmin_button, &QPushButton::clicked, [=, result_Qmin = result_Qmin]() {
+		if(!copy_qmin_button->text().isEmpty())
+			clipboard->setText(result_Qmin->text());
+	});
+
+	QObject::connect(copy_qsek_button, &QPushButton::clicked, [=, result_Qsek = result_Qsek]() {
+		if (!copy_qsek_button->text().isEmpty())
+			clipboard->setText(result_Qsek->text());
+	});
 
 	load_settings();
 }
