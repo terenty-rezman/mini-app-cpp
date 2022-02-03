@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>971</width>
+    <width>875</width>
     <height>494</height>
    </rect>
   </property>
@@ -62,7 +62,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string>123</string>
+               <string/>
               </property>
               <property name="readOnly">
                <bool>true</bool>
@@ -140,7 +140,7 @@
                <bool>true</bool>
               </property>
               <property name="text">
-               <string>123</string>
+               <string/>
               </property>
               <property name="readOnly">
                <bool>true</bool>
@@ -308,7 +308,7 @@
             </spacer>
            </item>
            <item row="3" column="0">
-            <widget class="QLabel" name="label_10">
+            <widget class="QCheckBox" name="A_checkBox">
              <property name="text">
               <string>Амплитуда сигнала</string>
              </property>
@@ -329,23 +329,44 @@
             </widget>
            </item>
            <item row="4" column="0">
+            <widget class="QCheckBox" name="Speed_checkBox">
+             <property name="text">
+              <string>Скорость</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="Speed">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>мм/с</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
             <widget class="QLabel" name="label_12">
              <property name="text">
               <string>Частота сигнала</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
+           <item row="5" column="1">
             <widget class="QLineEdit" name="freq"/>
            </item>
-           <item row="4" column="2">
+           <item row="5" column="2">
             <widget class="QLabel" name="label_13">
              <property name="text">
               <string>Гц</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="6" column="0">
             <spacer name="verticalSpacer_9">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -358,7 +379,7 @@
              </property>
             </spacer>
            </item>
-           <item row="5" column="1">
+           <item row="6" column="1">
             <spacer name="verticalSpacer_6">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -371,7 +392,7 @@
              </property>
             </spacer>
            </item>
-           <item row="5" column="2">
+           <item row="6" column="2">
             <spacer name="verticalSpacer_10">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -384,7 +405,7 @@
              </property>
             </spacer>
            </item>
-           <item row="6" column="0">
+           <item row="7" column="0">
             <spacer name="horizontalSpacer_5">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -397,14 +418,14 @@
              </property>
             </spacer>
            </item>
-           <item row="6" column="1">
+           <item row="7" column="1">
             <widget class="QPushButton" name="calc">
              <property name="text">
               <string>Вычислить</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="2">
+           <item row="7" column="2">
             <spacer name="horizontalSpacer_6">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>

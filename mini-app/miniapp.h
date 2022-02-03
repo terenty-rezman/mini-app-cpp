@@ -21,7 +21,10 @@ private:
         QLineEdit*,
         QLineEdit*,
         QLineEdit*,
-        QLineEdit*
+        QLineEdit*,
+        QLineEdit*,
+        QCheckBox*, 
+        QCheckBox*
     > find_widgets();
 
     void read_fields_and_calc_q();
