@@ -23,12 +23,13 @@ private:
         QLineEdit*,
         QLineEdit*,
         QLineEdit*,
-        QCheckBox*, 
+        QLineEdit*,
         QCheckBox*
     > find_widgets();
 
     void read_fields_and_calc_q();
     void load_settings();
+    void enable_speed(bool);
 
     QSettings create_settings_obj();
 

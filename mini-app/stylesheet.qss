@@ -1,0 +1,23 @@
+QWidget {
+	font-size: 14px;
+}
+
+QLineEdit {
+	/* set qt object property */
+	qproperty-alignment: AlignCenter;
+}
+
+QLineEdit#resultS {
+
+}
+
+QLineEdit#resultQsek {
+	font-size: 14px;
+}
+
+QLineEdit#resultQmin {
+	font-size: 20px;
+	padding: 5px;
+}
+
+/* https://doc.qt.io/qt-5/stylesheet-examples.html /*

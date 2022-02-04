@@ -5,10 +5,11 @@
 #include <qsettings.h>
 #include <qclipboard.h>
 #include <qbuttongroup.h>
+#include <qfile.h>
 
 namespace
 {
-	std::pair<double, double> calc_q_A(double Dp, double Ds, double A, double freq)
+	std::tuple<double, double, double, double> calc_q_A(double Dp, double Ds, double A, double freq)
 	{
 		// Основные вычисления:
 		// Перевод в систему СИ:
@@ -26,15 +27,13 @@ namespace
 		double Q_m3s = V * S_work_area; // расход в ед. СИ
 		double Q_litrmin = Q_m3s * (1000.0 * 60.0); // расход в л/мин
 
-		return { Q_m3s, Q_litrmin };
+		return { Q_m3s, Q_litrmin, S_work_area, V * 1000.0 };
 	}
 
-	std::pair<double, double> calc_q_Speed(double Dp, double Ds, double Speed, double freq)
+	std::tuple<double, double, double> calc_q_Speed(double Dp, double Ds, double Speed)
 	{
 		// Основные вычисления:
 		// Перевод в систему СИ:
-		double Freq = 2 * M_PI * freq;  // частота:   Гц -> рад/c
-
 		double Dp_meters = Dp / 1000;   // площадь поршня:   мм -> м
 		double Ds_meters = Ds / 1000;   // площадь штока:    мм -> м  
 
@@ -46,7 +45,7 @@ namespace
 		double Q_m3s = V * S_work_area; // расход в ед. СИ
 		double Q_litrmin = Q_m3s * (1000.0 * 60.0); // расход в л/мин
 
-		return { Q_m3s, Q_litrmin };
+		return { Q_m3s, Q_litrmin, S_work_area };
 	}
 }
 
@@ -65,7 +64,7 @@ miniapp::miniapp(QWidget* parent)
 		freq_widget,
 		result_Qmin,
 		result_Qsek,
-		A_checkbox, 
+		result_S,
 		Speed_checkbox
 	] = find_widgets();
 
@@ -100,24 +99,12 @@ miniapp::miniapp(QWidget* parent)
 	});
 
 	QButtonGroup* exclusive_buttons = new QButtonGroup();
-	exclusive_buttons->addButton(A_checkbox);
-	exclusive_buttons->addButton(Speed_checkbox);
 
-	QObject::connect(A_checkbox, &QCheckBox::stateChanged, [=, A_widget = A_widget](int state) {
-		A_widget->setEnabled(static_cast<bool>(state));
-	});
+	QObject::connect(Speed_checkbox, &QCheckBox::stateChanged, this, &miniapp::enable_speed);
 
-	QObject::connect(Speed_checkbox, &QCheckBox::stateChanged, [=, Speed_widget = Speed_widget](int state) {
-		Speed_widget->setEnabled(static_cast<bool>(state));
-	});
-
-	A_checkbox->setChecked(true);
-	Speed_widget->setEnabled(false);
+	enable_speed(false);
 
 	load_settings();
-
-	result_Qmin->setStyleSheet("QLineEdit{font-size: 20px;}");
-	result_Qsek->setStyleSheet("QLineEdit{font-size: 20px;}");
 }
 
 void miniapp::closeEvent(QCloseEvent* event)
@@ -137,7 +124,7 @@ void miniapp::closeEvent(QCloseEvent* event)
 		freq_widget,
 		result_Qmin,
 		result_Qsek,
-		A_checkbox,
+		result_S,
 		Speed_checkbox
 	] = find_widgets();
 
@@ -150,11 +137,10 @@ void miniapp::closeEvent(QCloseEvent* event)
 	settings.setValue("result_Qmin", result_Qmin->text());
 	settings.setValue("result_Qsek", result_Qsek->text());
 	settings.setValue("Speed_checkbox", Speed_checkbox->isChecked());
-	settings.setValue("A_checkbox", A_checkbox->isChecked());
 	settings.endGroup();
 }
 
-std::tuple<QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QCheckBox*, QCheckBox*>
+std::tuple<QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QCheckBox*>
 miniapp::find_widgets()
 {
 	QLineEdit* Dp_widget = this->findChild<QLineEdit*>("Dp");
@@ -165,11 +151,11 @@ miniapp::find_widgets()
 
 	QLineEdit* result_Qmin = this->findChild<QLineEdit*>("resultQmin");
 	QLineEdit* result_Qsek = this->findChild<QLineEdit*>("resultQsek");
+	QLineEdit* result_S = this->findChild<QLineEdit*>("resultS");
 
-	QCheckBox* A_checkbox = this->findChild<QCheckBox*>("A_checkBox");
-	QCheckBox* Speed_checkbox = this->findChild<QCheckBox*>("Speed_checkBox");
+	QCheckBox* Speed_checkbox = this->findChild<QCheckBox*>("Speed_checkbox");
 
-	return { Dp_widget, Ds_widget, A_widget, Speed_widget, freq_widget, result_Qmin, result_Qsek, A_checkbox, Speed_checkbox };
+	return { Dp_widget, Ds_widget, A_widget, Speed_widget, freq_widget, result_Qmin, result_Qsek, result_S, Speed_checkbox };
 }
 
 void miniapp::read_fields_and_calc_q()
@@ -182,21 +168,22 @@ void miniapp::read_fields_and_calc_q()
 		freq_widget,
 		result_Qmin,
 		result_Qsek,
-		A_checkbox,
+		result_S,
 		Speed_checkbox
 	] = find_widgets();
 
 	std::vector<std::tuple<QString, const QLineEdit*, QString>> id_and_widget_and_error = {
 			{"Dp", Dp_widget, "Неверное значение поля Диаметр поршня."},
 			{"Ds", Ds_widget, "Неверное значение поля Диаметр штока."},
-			{"freq", freq_widget, "Неверное значение поля Частота сигнала."}
 	};
 
-	if (Speed_checkbox->isChecked())
+	if (Speed_checkbox->isChecked()) {
 		id_and_widget_and_error.push_back({ "Speed", Speed_widget, "Неверное значение поля Скорость." });
-
-	if (A_checkbox->isChecked())
+	}
+	else {
 		id_and_widget_and_error.push_back({ "A", A_widget, "Неверное значение поля Амплитуда сигнала." });
+		id_and_widget_and_error.push_back({ "freq", freq_widget, "Неверное значение поля Частота сигнала." });
+	}
 
 	std::map<QString, double> args;
 
@@ -210,18 +197,21 @@ void miniapp::read_fields_and_calc_q()
 		args[id] = arg;
 	}
 
-	if (A_checkbox->isChecked()) {
-		auto [Q_m3s, Q_litrmin] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"]);
-
-		result_Qmin->setText(QString::number(Q_litrmin));
-		result_Qsek->setText(QString::number(Q_m3s));
-	}
-
 	if (Speed_checkbox->isChecked()) {
-		auto [Q_m3s, Q_litrmin] = calc_q_Speed(args["Dp"], args["Ds"], args["Speed"], args["freq"]);
+		auto [Q_m3s, Q_litrmin, S] = calc_q_Speed(args["Dp"], args["Ds"], args["Speed"]);
 
+		result_S->setText(QString::number(S));
 		result_Qmin->setText(QString::number(Q_litrmin));
 		result_Qsek->setText(QString::number(Q_m3s));
+	} 
+	else {
+		auto [Q_m3s, Q_litrmin, S, V] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"]);
+
+		result_S->setText(QString::number(S));
+		result_Qmin->setText(QString::number(Q_litrmin));
+		result_Qsek->setText(QString::number(Q_m3s));
+
+		Speed_widget->setText(QString::number(V));
 	}
 }
 
@@ -242,7 +232,7 @@ void miniapp::load_settings()
 		freq_widget,
 		result_Qmin,
 		result_Qsek,
-		A_checkbox,
+		result_S,
 		Speed_checkbox
 	] = find_widgets();
 
@@ -256,12 +246,29 @@ void miniapp::load_settings()
 	//result_Qsek->setText(settings.value("result_Qsek", "").toString());
 
 	Speed_checkbox->setChecked(settings.value("Speed_checkbox", false).toBool());
-	A_checkbox->setChecked(settings.value("A_checkbox", false).toBool());
 
-	Speed_widget->setEnabled(Speed_checkbox->isChecked());
-	A_widget->setEnabled(A_checkbox->isChecked());
+	enable_speed(Speed_checkbox->isChecked());
 
 	settings.endGroup();
+}
+
+void miniapp::enable_speed(bool state)
+{
+	auto [
+		Dp_widget,
+			Ds_widget,
+			A_widget,
+			Speed_widget,
+			freq_widget,
+			result_Qmin,
+			result_Qsek,
+			result_S,
+			Speed_checkbox
+	] = find_widgets();
+
+	A_widget->setEnabled(static_cast<bool>(!state));
+	freq_widget->setEnabled(static_cast<bool>(!state));
+	Speed_widget->setEnabled(static_cast<bool>(state));
 }
 
 QSettings miniapp::create_settings_obj()
