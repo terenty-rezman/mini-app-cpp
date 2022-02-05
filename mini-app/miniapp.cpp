@@ -70,11 +70,14 @@ miniapp::miniapp(QWidget* parent)
 
 	QPushButton* calc_button = this->findChild<QPushButton*>("calc");
 
-	Dp_widget->setValidator(new QDoubleValidator());
-	Ds_widget->setValidator(new QDoubleValidator());
-	A_widget->setValidator(new QDoubleValidator());
-	freq_widget->setValidator(new QDoubleValidator());
-	Speed_widget->setValidator(new QDoubleValidator());
+    QDoubleValidator* validator = new QDoubleValidator();
+    validator->setLocale(QLocale::English);
+
+    Dp_widget->setValidator(validator);
+    Ds_widget->setValidator(validator);
+    A_widget->setValidator(validator);
+    freq_widget->setValidator(validator);
+    Speed_widget->setValidator(validator);
 
 	QObject::connect(calc_button, &QPushButton::clicked, this, &miniapp::read_fields_and_calc_q);
 
@@ -200,18 +203,18 @@ void miniapp::read_fields_and_calc_q()
 	if (Speed_checkbox->isChecked()) {
 		auto [Q_m3s, Q_litrmin, S] = calc_q_Speed(args["Dp"], args["Ds"], args["Speed"]);
 
-		result_S->setText(QString::number(S));
-		result_Qmin->setText(QString::number(Q_litrmin));
-		result_Qsek->setText(QString::number(Q_m3s));
+		result_S->setText(QString::number(S, 'g', 10));
+        result_Qmin->setText(QString::number(Q_litrmin, 'g', 10));
+        result_Qsek->setText(QString::number(Q_m3s, 'g', 10));
 	} 
 	else {
 		auto [Q_m3s, Q_litrmin, S, V] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"]);
 
-		result_S->setText(QString::number(S));
-		result_Qmin->setText(QString::number(Q_litrmin));
-		result_Qsek->setText(QString::number(Q_m3s));
+		result_S->setText(QString::number(S, 'g', 10));
+        result_Qmin->setText(QString::number(Q_litrmin, 'g', 10));
+		result_Qsek->setText(QString::number(Q_m3s, 'g', 10));
 
-		Speed_widget->setText(QString::number(V));
+		Speed_widget->setText(QString::number(V, 'g', 10));
 	}
 }
 

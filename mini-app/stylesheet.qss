@@ -20,4 +20,13 @@ QLineEdit#resultQmin {
 	padding: 5px;
 }
 
+QLineEdit#resultQmin {
+	font-size: 20px;
+	padding: 5px;
+}
+
+QPushButton#calc {
+	padding: 10px;
+}
+
 /* https://doc.qt.io/qt-5/stylesheet-examples.html /*

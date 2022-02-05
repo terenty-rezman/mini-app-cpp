@@ -98,7 +98,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Полученный расход Q, м^3/c:</string>
+           <string>Полученный расход, м^3/c:</string>
           </property>
          </widget>
         </item>
@@ -146,7 +146,7 @@
         <item>
          <widget class="QLabel" name="label_14">
           <property name="text">
-           <string>Полученный расход Q, л/мин:</string>
+           <string>Полученный расход, л/мин:</string>
           </property>
          </widget>
         </item>
