@@ -204,17 +204,17 @@ void miniapp::read_fields_and_calc_q()
 		auto [Q_m3s, Q_litrmin, S] = calc_q_Speed(args["Dp"], args["Ds"], args["Speed"]);
 
 		result_S->setText(QString::number(S, 'g', 10));
-        result_Qmin->setText(QString::number(Q_litrmin, 'g', 10));
-        result_Qsek->setText(QString::number(Q_m3s, 'g', 10));
+        result_Qmin->setText(QString::number(Q_litrmin, 'g', 9));
+        result_Qsek->setText(QString::number(Q_m3s, 'g', 9));
 	} 
 	else {
 		auto [Q_m3s, Q_litrmin, S, V] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"]);
 
 		result_S->setText(QString::number(S, 'g', 10));
-        result_Qmin->setText(QString::number(Q_litrmin, 'g', 10));
-		result_Qsek->setText(QString::number(Q_m3s, 'g', 10));
+        result_Qmin->setText(QString::number(Q_litrmin, 'g', 9));
+		result_Qsek->setText(QString::number(Q_m3s, 'g', 9));
 
-		Speed_widget->setText(QString::number(V, 'g', 10));
+		Speed_widget->setText(QString::number(V, 'g', 11));
 	}
 }
 
