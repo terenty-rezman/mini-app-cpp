@@ -9,7 +9,14 @@
 
 namespace
 {
-	std::tuple<double, double, double, double> calc_q_A(double Dp, double Ds, double A, double freq)
+	std::tuple<double, double, double, double> calc_q_A
+	(
+		double Dp, // мм
+		double Ds, // мм
+		double A, // мм
+		double freq, // Гц
+		double L // 
+	)
 	{
 		// Основные вычисления:
 		// Перевод в систему СИ:
@@ -23,7 +30,7 @@ namespace
 		double S_work_area = (M_PI / 4) * (Dp_meters * Dp_meters - Ds_meters * Ds_meters); // в м^2
 
 		// Основная формула:
-		double V = Freq * A_meters;
+		double V = Freq * A_meters * pow(10.0, L/20.0);
 		double Q_m3s = V * S_work_area; // расход в ед. СИ
 		double Q_litrmin = Q_m3s * (1000.0 * 60.0); // расход в л/мин
 
@@ -62,6 +69,7 @@ miniapp::miniapp(QWidget* parent)
 		A_widget,
 		Speed_widget,
 		freq_widget,
+		amplify_widget,
 		result_Qmin,
 		result_Qsek,
 		result_S,
@@ -77,6 +85,7 @@ miniapp::miniapp(QWidget* parent)
     Ds_widget->setValidator(validator);
     A_widget->setValidator(validator);
     freq_widget->setValidator(validator);
+	amplify_widget->setValidator(validator);
     Speed_widget->setValidator(validator);
 
 	QObject::connect(calc_button, &QPushButton::clicked, this, &miniapp::read_fields_and_calc_q);
@@ -85,6 +94,7 @@ miniapp::miniapp(QWidget* parent)
 	QObject::connect(Ds_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
 	QObject::connect(A_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
 	QObject::connect(freq_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
+	QObject::connect(amplify_widget, &QLineEdit::returnPressed, this, &miniapp::read_fields_and_calc_q);
 
 	QPushButton* copy_qmin_button = this->findChild<QPushButton*>("copyQmin");
 	QPushButton* copy_qsek_button = this->findChild<QPushButton*>("copyQsek");
@@ -125,6 +135,7 @@ void miniapp::closeEvent(QCloseEvent* event)
 		A_widget,
 		Speed_widget,
 		freq_widget,
+		amplify_widget,
 		result_Qmin,
 		result_Qsek,
 		result_S,
@@ -137,13 +148,14 @@ void miniapp::closeEvent(QCloseEvent* event)
 	settings.setValue("A_widget", A_widget->text());
 	settings.setValue("Speed_widget", Speed_widget->text());
 	settings.setValue("freq_widget", freq_widget->text());
+	settings.setValue("amplify_widget", amplify_widget->text());
 	settings.setValue("result_Qmin", result_Qmin->text());
 	settings.setValue("result_Qsek", result_Qsek->text());
 	settings.setValue("Speed_checkbox", Speed_checkbox->isChecked());
 	settings.endGroup();
 }
 
-std::tuple<QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QCheckBox*>
+std::tuple<QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QLineEdit*, QCheckBox*>
 miniapp::find_widgets()
 {
 	QLineEdit* Dp_widget = this->findChild<QLineEdit*>("Dp");
@@ -151,6 +163,7 @@ miniapp::find_widgets()
 	QLineEdit* A_widget = this->findChild<QLineEdit*>("A");
 	QLineEdit* Speed_widget = this->findChild<QLineEdit*>("Speed");
 	QLineEdit* freq_widget = this->findChild<QLineEdit*>("freq");
+	QLineEdit* amplify_widget = this->findChild<QLineEdit*>("amplify");
 
 	QLineEdit* result_Qmin = this->findChild<QLineEdit*>("resultQmin");
 	QLineEdit* result_Qsek = this->findChild<QLineEdit*>("resultQsek");
@@ -158,7 +171,7 @@ miniapp::find_widgets()
 
 	QCheckBox* Speed_checkbox = this->findChild<QCheckBox*>("Speed_checkbox");
 
-	return { Dp_widget, Ds_widget, A_widget, Speed_widget, freq_widget, result_Qmin, result_Qsek, result_S, Speed_checkbox };
+	return { Dp_widget, Ds_widget, A_widget, Speed_widget, freq_widget, amplify_widget, result_Qmin, result_Qsek, result_S, Speed_checkbox };
 }
 
 void miniapp::read_fields_and_calc_q()
@@ -169,6 +182,7 @@ void miniapp::read_fields_and_calc_q()
 		A_widget,
 		Speed_widget,
 		freq_widget,
+		amplify_widget,
 		result_Qmin,
 		result_Qsek,
 		result_S,
@@ -186,6 +200,7 @@ void miniapp::read_fields_and_calc_q()
 	else {
 		id_and_widget_and_error.push_back({ "A", A_widget, "Неверное значение поля Амплитуда сигнала." });
 		id_and_widget_and_error.push_back({ "freq", freq_widget, "Неверное значение поля Частота сигнала." });
+		id_and_widget_and_error.push_back({ "amplify", amplify_widget, "Неверное значение поля Степень усиления входного сигнала." });
 	}
 
 	std::map<QString, double> args;
@@ -208,7 +223,7 @@ void miniapp::read_fields_and_calc_q()
         result_Qsek->setText(QString::number(Q_m3s, 'g', 9));
 	} 
 	else {
-		auto [Q_m3s, Q_litrmin, S, V] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"]);
+		auto [Q_m3s, Q_litrmin, S, V] = calc_q_A(args["Dp"], args["Ds"], args["A"], args["freq"], args["amplify"]);
 
 		result_S->setText(QString::number(S, 'g', 10));
         result_Qmin->setText(QString::number(Q_litrmin, 'g', 9));
@@ -233,6 +248,7 @@ void miniapp::load_settings()
 		A_widget,
 		Speed_widget,
 		freq_widget,
+		amplify_widget,
 		result_Qmin,
 		result_Qsek,
 		result_S,
@@ -245,6 +261,7 @@ void miniapp::load_settings()
 	A_widget->setText(settings.value("A_widget", "").toString());
 	Speed_widget->setText(settings.value("Speed_widget", "").toString());
 	freq_widget->setText(settings.value("freq_widget", "").toString());
+	amplify_widget->setText(settings.value("amplify_widget", "").toString());
 	//result_Qmin->setText(settings.value("result_Qmin", "").toString());
 	//result_Qsek->setText(settings.value("result_Qsek", "").toString());
 
@@ -263,6 +280,7 @@ void miniapp::enable_speed(bool state)
 			A_widget,
 			Speed_widget,
 			freq_widget,
+			amplify_widget,
 			result_Qmin,
 			result_Qsek,
 			result_S,
@@ -271,6 +289,7 @@ void miniapp::enable_speed(bool state)
 
 	A_widget->setEnabled(static_cast<bool>(!state));
 	freq_widget->setEnabled(static_cast<bool>(!state));
+	amplify_widget->setEnabled(static_cast<bool>(!state));
 	Speed_widget->setEnabled(static_cast<bool>(state));
 }
 

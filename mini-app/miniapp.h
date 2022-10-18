@@ -24,6 +24,7 @@ private:
         QLineEdit*,
         QLineEdit*,
         QLineEdit*,
+        QLineEdit*,
         QCheckBox*
     > find_widgets();
 
